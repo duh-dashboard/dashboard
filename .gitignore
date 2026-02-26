@@ -1,0 +1,34 @@
+# Build
+build/
+cmake-build-*/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CPackConfig.cmake
+CPackSourceConfig.cmake
+_CPack_Packages/
+
+# Compiled output
+*.so
+*.o
+*.a
+
+# Qt generated
+*_autogen/
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+
+# IDE
+.vscode/
+.idea/
+*.user
+.clangd/
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db

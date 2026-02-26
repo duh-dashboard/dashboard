@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Dashboard
+GenericName=Desktop Dashboard
+Comment=A customizable widget-based desktop dashboard
+Exec=dashboard
+Icon=dashboard
+Terminal=false
+Categories=Utility;
+Keywords=dashboard;widgets;monitor;
+StartupNotify=true
