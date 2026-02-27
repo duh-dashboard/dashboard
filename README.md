@@ -2,6 +2,8 @@
 
 A customizable widget-based desktop application for Linux. Widgets are Qt plugins loaded at runtime — add, remove, move, and resize them freely. Layout and state persist across restarts.
 
+[![CI](https://github.com/duh-dashboard/dashboard/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/duh-dashboard/dashboard/actions/workflows/ci.yml)
+
 ## Features
 
 - Frameless window with a custom title bar (minimize / maximize / close / menu)
