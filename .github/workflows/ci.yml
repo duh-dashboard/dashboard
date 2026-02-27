@@ -112,7 +112,8 @@ jobs:
             name=$(basename "$widget_dir")
             cmake -S "$widget_dir" -B "build/widgets/$name" -G Ninja \
               -DCMAKE_PREFIX_PATH=$HOME/.local \
-              -DCMAKE_INSTALL_PREFIX=/usr
+              -DCMAKE_INSTALL_PREFIX=/usr \
+              -DCMAKE_INSTALL_LIBDIR=lib
             cmake --build "build/widgets/$name" --parallel
             DESTDIR=$(pwd)/AppDir cmake --install "build/widgets/$name"
           done
