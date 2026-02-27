@@ -281,16 +281,30 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y flatpak flatpak-builder
-          sudo flatpak remote-add --system --if-not-exists flathub \
+          flatpak remote-add --user --if-not-exists flathub \
             https://dl.flathub.org/repo/flathub.flatpakrepo
 
+      - name: Install KDE runtime and SDK
+        run: |
+          flatpak install --user -y flathub \
+            org.kde.Platform//6.9 \
+            org.kde.Sdk//6.9
+
       - name: Build Flatpak
-        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-        with:
-          bundle: Dashboard-${{ github.ref_name }}-x86_64.flatpak
-          manifest-path: io.github.duh-dashboard.Dashboard.yml
-          cache-key: flatpak-builder-${{ github.sha }}
-          upload-artifact: false
+        run: |
+          flatpak-builder \
+            --force-clean \
+            --disable-rofiles-fuse \
+            --repo=flatpak-repo \
+            flatpak-build \
+            io.github.duh-dashboard.Dashboard.yml
+
+      - name: Create bundle
+        run: |
+          flatpak build-bundle \
+            flatpak-repo \
+            Dashboard-${{ github.ref_name }}-x86_64.flatpak \
+            io.github.duh-dashboard.Dashboard
 
       - name: Upload Flatpak to release
         uses: softprops/action-gh-release@v2
