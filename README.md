@@ -99,4 +99,4 @@ AddWidgetDialog       — widget picker modal
 
 Build the `widgets` project and place the resulting `.so` files in the `plugins/` directory next to the dashboard executable, or install them to `<prefix>/lib/dashboard/plugins`.
 
-See [`widget-sdk/README.md`](https://github.com/duh-dashboard/widget-sdk/README.md) for the full widget developer guide.
+See [`widget-sdk/README.md`](https://github.com/duh-dashboard/widget-sdk#dashboard-widget-sdk) for the full widget developer guide.
