@@ -1,0 +1,154 @@
+app-id: io.github.duh-dashboard.Dashboard
+runtime: org.kde.Platform
+runtime-version: '6.8'
+sdk: org.kde.Sdk
+command: dashboard
+
+finish-args:
+  - --share=network          # weather widget (Open-Meteo), ai-chat (OpenAI API)
+  - --share=ipc              # Qt X11 shared memory
+  - --socket=fallback-x11   # X11 support
+  - --socket=wayland         # Wayland support
+  - --device=dri             # GPU rendering
+  - --filesystem=xdg-config/Dashboard:create  # app config and layout files
+  - --filesystem=home:ro     # logtail: read arbitrary log files
+  - --talk-name=org.freedesktop.systemd1      # logtail: journalctl access
+
+modules:
+
+  - name: widget-sdk
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+    sources:
+      - type: dir
+        path: widget-sdk
+
+  - name: clock-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/clock
+
+  - name: calendar-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/calendar
+
+  - name: todo-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/todo
+
+  - name: weather-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/weather
+
+  - name: system-status-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/system-status
+
+  - name: notes-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/notes
+
+  - name: pomodoro-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/pomodoro
+
+  - name: countdown-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/countdown
+
+  - name: openai-chat-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/ai-chat
+
+  - name: links-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/links
+
+  - name: htop-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/htop
+
+  - name: logtail-widget
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    sources:
+      - type: dir
+        path: widgets/logtail
+
+  - name: dashboard
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/app
+    sources:
+      - type: dir
+        path: .

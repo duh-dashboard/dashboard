@@ -189,3 +189,103 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: 'Dashboard-*.AppImage'
+
+  # ── Flatpak ─────────────────────────────────────────────────────────────
+
+  package-flatpak:
+    runs-on: ubuntu-22.04
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out widget-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/widget-sdk
+          path: widget-sdk
+
+      - name: Check out clock
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/clock
+          path: widgets/clock
+
+      - name: Check out calendar
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/calendar
+          path: widgets/calendar
+
+      - name: Check out todo
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/todo
+          path: widgets/todo
+
+      - name: Check out weather
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/weather
+          path: widgets/weather
+
+      - name: Check out system-status
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/system-status
+          path: widgets/system-status
+
+      - name: Check out notes
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/notes
+          path: widgets/notes
+
+      - name: Check out pomodoro
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/pomodoro
+          path: widgets/pomodoro
+
+      - name: Check out countdown
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/countdown
+          path: widgets/countdown
+
+      - name: Check out openai-chat
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/openai-chat
+          path: widgets/ai-chat
+
+      - name: Check out links
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/links
+          path: widgets/links
+
+      - name: Check out htop
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/htop
+          path: widgets/htop
+
+      - name: Check out logtail
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/logtail
+          path: widgets/logtail
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: Dashboard-${{ github.ref_name }}-x86_64.flatpak
+          manifest-path: io.github.duh-dashboard.Dashboard.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+          upload-artifact: false
+
+      - name: Upload Flatpak to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: 'Dashboard-*.flatpak'
