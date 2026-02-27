@@ -1,0 +1,189 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-appimage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out widget-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/widget-sdk
+          path: widget-sdk
+
+      - name: Check out clock
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/clock
+          path: widgets/clock
+
+      - name: Check out calendar
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/calendar
+          path: widgets/calendar
+
+      - name: Check out todo
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/todo
+          path: widgets/todo
+
+      - name: Check out weather
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/weather
+          path: widgets/weather
+
+      - name: Check out system-status
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/system-status
+          path: widgets/system-status
+
+      - name: Check out notes
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/notes
+          path: widgets/notes
+
+      - name: Check out pomodoro
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/pomodoro
+          path: widgets/pomodoro
+
+      - name: Check out countdown
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/countdown
+          path: widgets/countdown
+
+      - name: Check out openai-chat
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/openai-chat
+          path: widgets/ai-chat
+
+      - name: Check out links
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/links
+          path: widgets/links
+
+      - name: Check out htop
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/htop
+          path: widgets/htop
+
+      - name: Check out logtail
+        uses: actions/checkout@v4
+        with:
+          repository: duh-dashboard/logtail
+          path: widgets/logtail
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            cmake ninja-build qt6-base-dev libgl-dev \
+            patchelf file librsvg2-bin
+
+      # ── Phase A: Build all projects ───────────────────────────────────────
+
+      - name: Build & install widget-sdk
+        run: |
+          cmake -S widget-sdk -B build/sdk -G Ninja \
+            -DCMAKE_INSTALL_PREFIX=$HOME/.local
+          cmake --build build/sdk
+          cmake --install build/sdk
+
+      - name: Build & install widgets into AppDir
+        run: |
+          for widget_dir in widgets/*/; do
+            name=$(basename "$widget_dir")
+            cmake -S "$widget_dir" -B "build/widgets/$name" -G Ninja \
+              -DCMAKE_PREFIX_PATH=$HOME/.local \
+              -DCMAKE_INSTALL_PREFIX=/usr
+            cmake --build "build/widgets/$name" --parallel
+            DESTDIR=$(pwd)/AppDir cmake --install "build/widgets/$name"
+          done
+
+      - name: Build & install dashboard into AppDir
+        run: |
+          cmake -S . -B build/dashboard -G Ninja \
+            -DCMAKE_PREFIX_PATH=$HOME/.local \
+            -DCMAKE_INSTALL_PREFIX=/usr
+          cmake --build build/dashboard
+          DESTDIR=$(pwd)/AppDir cmake --install build/dashboard
+
+      # ── Phase B: Prepare AppDir (tag only) ───────────────────────────────
+
+      - name: Stage widget plugins next to executable
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          mkdir -p AppDir/usr/bin/plugins
+          find AppDir/usr/lib/dashboard/plugins -maxdepth 1 \
+            \( -name '*.so' -o -name '*.json' \) \
+            -exec cp {} AppDir/usr/bin/plugins/ \;
+
+      - name: Patch plugin RPATHs
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          for f in AppDir/usr/bin/plugins/*.so; do
+            patchelf --set-rpath '$ORIGIN/../../lib' "$f"
+          done
+
+      - name: Convert SVG icon to PNG
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          rsvg-convert -w 256 -h 256 \
+            AppDir/usr/share/icons/hicolor/scalable/apps/dashboard.svg \
+            -o AppDir/usr/share/icons/hicolor/256x256/apps/dashboard.png
+
+      - name: Place desktop file at AppDir root
+        if: startsWith(github.ref, 'refs/tags/')
+        run: cp AppDir/usr/share/applications/dashboard.desktop AppDir/
+
+      # ── Phase C: Package AppImage (tag only) ─────────────────────────────
+
+      - name: Download linuxdeploy
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
+
+      - name: Create AppImage
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+          QMAKE: /usr/bin/qmake6
+          DEPLOY_PLATFORM_THEMES: "1"
+        run: |
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --executable AppDir/usr/bin/dashboard \
+            --desktop-file AppDir/dashboard.desktop \
+            --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/dashboard.png \
+            --plugin qt \
+            --output appimage
+
+      # ── Phase D: Upload artifact (tag only) ───────────────────────────────
+
+      - name: Upload AppImage
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dashboard-${{ github.sha }}-x86_64
+          path: 'Dashboard-*.AppImage'
+          retention-days: 30
