@@ -1,4 +1,4 @@
-app-id: io.github.duh-dashboard.Dashboard
+app-id: io.github.duh_dashboard.Dashboard
 runtime: org.kde.Platform
 runtime-version: '6.9'
 sdk: org.kde.Sdk

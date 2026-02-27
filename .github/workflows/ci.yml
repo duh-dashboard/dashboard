@@ -297,14 +297,14 @@ jobs:
             --disable-rofiles-fuse \
             --repo=flatpak-repo \
             flatpak-build \
-            io.github.duh-dashboard.Dashboard.yml
+            io.github.duh_dashboard.Dashboard.yml
 
       - name: Create bundle
         run: |
           flatpak build-bundle \
             flatpak-repo \
             Dashboard-${{ github.ref_name }}-x86_64.flatpak \
-            io.github.duh-dashboard.Dashboard
+            io.github.duh_dashboard.Dashboard
 
       - name: Upload Flatpak to release
         uses: softprops/action-gh-release@v2
