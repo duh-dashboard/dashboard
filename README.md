@@ -20,7 +20,7 @@ A customizable widget-based desktop application for Linux. Widgets are Qt plugin
 
 ## Build
 
-`dashboard` depends on `widget-sdk`. Build and install it first if you haven't already:
+`dashboard` depends on [`widget-sdk`](https://github.com/duh-dashboard/dashboard). Build and install it first if you haven't already:
 
 ```sh
 cmake -S ../widget-sdk -B build-sdk -DCMAKE_INSTALL_PREFIX=~/.local
@@ -99,4 +99,4 @@ AddWidgetDialog       — widget picker modal
 
 Build the `widgets` project and place the resulting `.so` files in the `plugins/` directory next to the dashboard executable, or install them to `<prefix>/lib/dashboard/plugins`.
 
-See [`widget-sdk/README.md`](../widget-sdk/README.md) for the full widget developer guide.
+See [`widget-sdk/README.md`](https://github.com/duh-dashboard/widget-sdk/README.md) for the full widget developer guide.
