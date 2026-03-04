@@ -18,6 +18,9 @@
 #include <dashboard/IWidget.h>
 
 #include <QDialog>
+#include <QDialogButtonBox>
+#include <QLabel>
+#include <QLineEdit>
 #include <QList>
 #include <QListWidget>
 #include <QString>
@@ -25,9 +28,6 @@
 
 namespace dashboard {
 
-class QLabel;
-class QLineEdit;
-class QDialogButtonBox;
 class WidgetManager;
 
 class AddWidgetDialog : public QDialog {
