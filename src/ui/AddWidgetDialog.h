@@ -18,7 +18,12 @@
 #include <dashboard/IWidget.h>
 
 #include <QDialog>
+#include <QDialogButtonBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QList>
 #include <QListWidget>
+#include <QString>
 #include <vector>
 
 namespace dashboard {
@@ -34,10 +39,22 @@ public:
     std::vector<IWidget*> selectedWidgets() const;
 
 private:
+    struct WidgetEntry {
+        IWidget* widget = nullptr;
+        QString name;
+        QString description;
+    };
+
     void setupUi();
+    void applyFilter(const QString& filterText);
+    void updateOkButtonState();
 
     WidgetManager& widgetManager_;
-    QListWidget* listWidget_;
+    QLineEdit* searchEdit_ = nullptr;
+    QListWidget* listWidget_ = nullptr;
+    QLabel* emptyStateLabel_ = nullptr;
+    QDialogButtonBox* buttonBox_ = nullptr;
+    QList<WidgetEntry> widgetEntries_;
 };
 
 }  // namespace dashboard

@@ -19,7 +19,11 @@
 
 #include <QDialogButtonBox>
 #include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
 #include <QVBoxLayout>
+
+#include <algorithm>
 
 namespace dashboard {
 
@@ -35,32 +39,80 @@ void AddWidgetDialog::setupUi() {
 
     layout->addWidget(new QLabel("Select widgets to add:", this));
 
+    searchEdit_ = new QLineEdit(this);
+    searchEdit_->setPlaceholderText("Search widgets...");
+    layout->addWidget(searchEdit_);
+
     listWidget_ = new QListWidget(this);
     listWidget_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
-    const auto& widgets = widgetManager_.widgets();
-    for (auto* widget : widgets) {
-        auto meta = widget->metadata();
-        auto* item = new QListWidgetItem(listWidget_);
-        item->setText(QString("%1  —  %2").arg(meta.name, meta.description));
-        item->setData(Qt::UserRole, QVariant::fromValue(reinterpret_cast<quintptr>(widget)));
-    }
-
-    // Select first item by default
-    if (listWidget_->count() > 0) {
-        listWidget_->setCurrentRow(0);
-    }
-
     layout->addWidget(listWidget_, 1);
 
-    auto* buttons =
-        new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    layout->addWidget(buttons);
+    emptyStateLabel_ = new QLabel("No widgets match your search.", this);
+    emptyStateLabel_->setAlignment(Qt::AlignCenter);
+    layout->addWidget(emptyStateLabel_);
 
-    // Double-click to add immediately
-    connect(listWidget_, &QListWidget::itemDoubleClicked, this, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    buttonBox_ =
+        new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    layout->addWidget(buttonBox_);
+
+    const auto& widgets = widgetManager_.widgets();
+    widgetEntries_.reserve(static_cast<qsizetype>(widgets.size()));
+    for (auto* widget : widgets) {
+        auto meta = widget->metadata();
+        widgetEntries_.push_back({widget, meta.name, meta.description});
+    }
+
+    std::sort(widgetEntries_.begin(), widgetEntries_.end(),
+              [](const WidgetEntry& a, const WidgetEntry& b) {
+                  return QString::compare(a.name, b.name, Qt::CaseInsensitive) < 0;
+              });
+
+    applyFilter(QString());
+    updateOkButtonState();
+
+    connect(searchEdit_, &QLineEdit::textChanged, this, &AddWidgetDialog::applyFilter);
+    connect(listWidget_, &QListWidget::itemSelectionChanged, this,
+            &AddWidgetDialog::updateOkButtonState);
+
+    // Double-click to add immediately only if there is an active selection.
+    connect(listWidget_, &QListWidget::itemDoubleClicked, this,
+            [this](QListWidgetItem*) { if (!selectedWidgets().empty()) accept(); });
+    connect(buttonBox_, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttonBox_, &QDialogButtonBox::rejected, this, &QDialog::reject);
+}
+
+void AddWidgetDialog::applyFilter(const QString& filterText) {
+    const QString filter = filterText.trimmed();
+
+    listWidget_->clear();
+
+    int matches = 0;
+    for (const auto& entry : widgetEntries_) {
+        const bool include = filter.isEmpty()
+                             || entry.name.contains(filter, Qt::CaseInsensitive)
+                             || entry.description.contains(filter, Qt::CaseInsensitive);
+
+        if (!include) {
+            continue;
+        }
+
+        auto* item = new QListWidgetItem(listWidget_);
+        item->setText(QString("%1  —  %2").arg(entry.name, entry.description));
+        item->setData(Qt::UserRole,
+                      QVariant::fromValue(reinterpret_cast<quintptr>(entry.widget)));
+        ++matches;
+    }
+
+    emptyStateLabel_->setVisible(matches == 0);
+    listWidget_->setVisible(matches > 0);
+
+    updateOkButtonState();
+}
+
+void AddWidgetDialog::updateOkButtonState() {
+    if (auto* okButton = buttonBox_->button(QDialogButtonBox::Ok)) {
+        okButton->setEnabled(!selectedWidgets().empty());
+    }
 }
 
 std::vector<IWidget*> AddWidgetDialog::selectedWidgets() const {
